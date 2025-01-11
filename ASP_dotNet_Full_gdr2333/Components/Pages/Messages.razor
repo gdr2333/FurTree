@@ -1,0 +1,18 @@
+@page "/Messages"
+@using Microsoft.EntityFrameworkCore
+@using FurTreeFull.Data.DataBase
+@inject IDbContextFactory<MainDb> DbFactory
+
+<AuthorizeView>
+    <Authorized>
+        <a href="/SendMessage">我也要发一条</a>
+    </Authorized>
+</AuthorizeView>
+
+@using(var dbContext = DbFactory.CreateDbContext())
+{
+    foreach(var i in from message in dbContext.Messages orderby message.SendTime descending select message)
+    {
+        <a href=@($"/Message/{i.Id}")><p>@i.Content</p><p>——@i.SendTime</p></a>
+    }
+}

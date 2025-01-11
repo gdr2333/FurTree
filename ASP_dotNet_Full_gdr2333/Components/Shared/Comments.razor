@@ -1,0 +1,27 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using FurTreeFull.Data.DataBase
+@inject IDbContextFactory<MainDb> DbFactory
+
+@rendermode InteractiveServer
+
+<SendComment MessageId=MessageId StateHasChangedAction="StateHasChanged" Sender=@(GetSender())/>
+@using(var dbContext = DbFactory.CreateDbContext())
+{
+    foreach(var comment in from comment in dbContext.Comments where comment.MessageId == MessageId orderby comment.SendTime descending select comment)
+    {
+        <hr />
+        @comment.Content
+    }
+}
+
+@code
+{
+    [Parameter]
+    public long MessageId { get; set; }
+    public string GetSender()
+    {
+        using var dbContext = DbFactory.CreateDbContext();
+        return dbContext.Messages.Find(MessageId).Sender;
+    }
+}

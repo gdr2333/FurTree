@@ -1,0 +1,19 @@
+@page "/Message/{Id}"
+@using FurTreeFull.Data.DataBase
+@using FurTreeFull.Components.Shared
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<MainDb> DbFactory
+
+@using(var dbContext = DbFactory.CreateDbContext())
+{
+    var message = dbContext.Messages.Find(long.Parse(Id));
+    @message.Content
+}
+<hr />
+<Comments MessageId="long.Parse(Id)"/>
+
+@code
+{
+    [Parameter]
+    public string Id { get; set; }
+}
