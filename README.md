@@ -1,6 +1,6 @@
 # FurTree
 一个在线的树洞平台  
-A Online Treehollow Platforms.  
+An Online Treehollow Platform.  
 ## Todo List
 - [ ] Web Interface
 - - [ ] Note
@@ -30,7 +30,7 @@ A Online Treehollow Platforms.
 - - [ ] Read Reply Message
 - - [ ] Login & Register & Authority
 - - [ ] Half Anonymous Post & Reply
-- - [ ] AI for Malicious Detect
+- - [ ] AI for Malicious Detection
 - - [ ] Alarm
 - - [ ] SQL Query
 - - [ ] Generate RandomCode
@@ -47,7 +47,7 @@ A Online Treehollow Platforms.
 - - ~~QQ~~
 - - [ ] QQ Bot
 - - ~~QQ Uni-APP~~
-- - [ ] Wechat Uni-APP
+- - [ ] WeChat Uni-APP
 - - ~~Alipay Uni-APP~~
 - - ~~Dingtalk Bot~~
 - [ ] E-mail
@@ -58,10 +58,10 @@ A Online Treehollow Platforms.
 - - [ ] Post via Bot
 - - [ ] Get Message via RandomCode
 - - [ ] Get Message via Custom Code
-- - [ ] Invalid Detect
+- - [ ] Invalid Detection
 - [ ] Test
 ## Contribute
-More Please Read CONTRIBUTE.md  
+Please read `CONTRIBUTE.md` for more details.  
 Thanks Very Much!!!  
   
 TPCW-DRW-TP211 (TP211)  
