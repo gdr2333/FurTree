@@ -1,0 +1,1096 @@
+df1050 后端 API列表
+修订250115B
+
+备注：
+    如无特殊标注，Body均为JSON
+    不保证对其他格式的兼容性，包括但不限于XML YAML等
+
+验证码操作：
+    获取验证码：GET /Capcha/GetCapcha
+        发送：
+            Query：无
+            Body：无
+            Header：无
+        接收：
+            正常处理：
+                返回码：200 OK
+                内容：
+                    Image：
+                        类型：string(base64)
+                        内容：base64编码的验证码图片（格式为image/png）
+                    Id：
+                        类型：number(int64)
+                        内容：验证码Id
+
+账号操作：
+    创建账号：PUT /Account/Create
+        发送：
+            Query：无
+            Body：
+                Name：
+                    类型：string
+                    内容：用户名
+                Email：
+                    类型：string
+                    内容：用户邮箱
+                PasswordHash：
+                    类型：string(base64)
+                    内容：用户密码哈希值，算法为base64(sha256(utf8encode(password)))
+                CapchaId：
+                    类型：number(int64)
+                    内容：验证码Id
+                CapchaResult：
+                    类型：string
+                    内容：用户对验证码的输入
+            Header：无
+        接收：
+            正常处理：
+                返回码：204 No Content
+                内容：无
+            用户名已存在/用户邮箱已存在：
+                返回码：409 Conflict
+                内容：无
+            验证码无效（过期/不存在）/验证码错误：
+                返回码：400 Bad Request
+                内容：无
+    请求重发确认邮件：PUT /Account/ResendConfirm
+        发送：
+            Query：无
+            Body：
+                Email：
+                    类型：string
+                    内容：用户邮箱
+                CapchaId：
+                    类型：number(int64)
+                    内容：验证码Id
+                CapchaResult：
+                    类型：string
+                    内容：用户对验证码的输入
+            Header：无
+        接收：
+            正常处理：
+                返回码：204 No Content
+                内容：无
+            验证码错误：
+                返回码：400 Bad Request
+                内容：无
+            邮箱未注册：
+                返回码：404 Not Found
+                内容：无
+            邮箱已确认：
+                返回码：409 Conflict
+                内容：无
+            重发请求过于频繁：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被锁定：
+                返回码：403 Forbidden
+                内容：无 
+    登录账号：POST /Account/Login
+        发送：
+            Query：无
+            Body：
+                Name：
+                    类型：string
+                    内容：用户名或邮箱
+                PasswordHash：
+                    类型：string(base64)
+                    内容：用户密码哈希值，算法为base64(sha256(utf8encode(password)))
+                CapchaId：
+                    类型：number(int64)
+                    内容：验证码Id
+                CapchaResult：
+                    类型：string
+                    内容：用户对验证码的输入
+            Header：无
+        接收：
+            正常处理：
+                返回码：200 OK
+                内容：
+                    类型：string
+                    内容：JWT令牌，有效期30天
+            验证码无效（过期/不存在）/验证码错误：
+                返回码：400 Bad Request
+                内容：无
+            密码错误：
+                返回码：401 Unauthorized
+                内容：无
+            账号被锁定：
+                返回码：403 Forbidden
+                内容：无
+    更改账号名：PUT /Account/Name
+        发送：
+            Query：无
+            Body：
+                类型：string
+                内容：用户名
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            用户名冲突：
+                返回码：409 Conflict
+                内容：无
+    更改账号邮箱：PUT /Account/Email
+        发送：
+            Query：无
+            Body：
+                类型：string
+                内容：新邮箱
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            邮箱冲突：
+                返回码：409 Conflict
+                内容：无
+        备注：会重置邮箱确认状态并向新邮箱发送确认请求，如果新邮箱不是你的或者无效你就死定了，找管理吧
+    更改账号密码：PUT /Account/Password
+        发送：
+            Query：无
+            Body：
+                类型：string(base64)
+                内容：新密码哈希值，算法为base64(sha256(utf8encode(password)))
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+
+帖子操作：
+    上传帖子：POST /Post/New
+        发送：
+            Query：无
+            Body：
+                Title：
+                    类型：string
+                    内容：帖子标题
+                Content：
+                    类型：string
+                    内容：帖子正文
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理（审核通过）：
+                返回码：201 Created
+                内容：
+                    类型：number(int64)
+                    内容：帖子Id
+            正常处理（人工审核队列）：
+                返回码：202 Accepted
+                内容：
+                    类型：number(int64)
+                    内容：帖子Id
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            同时间内发送次数超过限制：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁：
+                返回码：403 Forbidden
+                内容：无 
+    获取帖子审核情况：GET /Post/Status：
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：帖子Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                类型：number(enum)
+                内容：
+                    0：等待审核（人工队列）
+                    1：审核通过
+                    2：审核不通过
+    上传帖子评论：POST /Post/NewComment
+        发送：
+            Query：无
+            Body：
+                PostId：
+                    类型：number(int64)
+                    内容：要发送到的帖子Id
+                Content：
+                    类型：string
+                    内容：帖子正文
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理（审核通过）：
+                返回码：201 Created
+                内容：
+                    类型：number(int64)
+                    内容：评论Id
+            正常处理（人工审核队列）：
+                返回码：202 Accepted
+                内容：
+                    类型：number(int64)
+                    内容：评论Id
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            同时间内发送次数超过限制：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁：
+                返回码：403 Forbidden
+                内容：无 
+    获取帖子评论审核情况：GET /Post/CommentStatus：
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：帖子评论Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                类型：number(enum)
+                内容：
+                    0：等待审核（人工队列）
+                    1：审核通过
+                    2：审核不通过
+    获取帖子内容：GET /Post/Index
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：帖子Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    Title：
+                        类型：string
+                        内容：帖子标题
+                    Content：
+                        类型：string
+                        内容：帖子正文
+                    SenderName：
+                        类型：string
+                        内容：发送者名称
+                    SnderId：
+                        类型：number(int64)
+                        内容：发送者Id
+                    SendTime：
+                        类型：string(ISO8601日期)
+                        内容：发送时间
+                    Comments：
+                        类型：array
+                            Content：
+                                类型：string
+                                内容：评论正文
+                            SenderName：
+                                类型：string
+                                内容：发送者名称
+                            SnderId：
+                                类型：number(int64)
+                                内容：发送者Id
+                            SendTime：
+                                类型：string(ISO8601日期)
+                                内容：发送时间
+                        内容：所有审核过的评论
+            帖子不存在：
+                返回码：404 Not Found
+                内容：无
+            帖子正在被审核/帖子审核不通过:
+                返回码：451 Unavailable For Legal Reasons
+                内容：无
+    获取帖子列表：GET /Post/All
+        发送：
+            Query：无
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：帖子Id
+                        Title：
+                            类型：string
+                            内容：帖子标题
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                        CommentNumber：
+                            类型：number(int64)
+                            内容：评论总数
+                    内容：帖子列表
+
+树洞操作：
+    上传树洞：POST /Treehollow/New
+        发送：
+            Query：无
+            Body：
+                类型：string
+                内容：树洞正文
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理（审核通过）：
+                返回码：201 Created
+                内容：
+                    类型：number(int64)
+                    内容：树洞Id
+            正常处理（人工审核队列）：
+                返回码：202 Accepted
+                内容：
+                    类型：number(int64)
+                    内容：树洞Id
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            同时间内发送次数超过限制：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁：
+                返回码：403 Forbidden
+                内容：无 
+    获取树洞审核情况：GET /Treehollow/Status：
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：树洞Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                类型：number(enum)
+                内容：
+                    0：等待审核（人工队列）
+                    1：审核通过
+                    2：审核不通过
+    上传树洞评论：POST /Treehollow/NewComment
+        发送：
+            Query：无
+            Body：
+                TreehollowId：
+                    类型：number(int64)
+                    内容：要发送到的树洞Id
+                Content：
+                    类型：string
+                    内容：评论正文
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理（审核通过）：
+                返回码：201 Created
+                内容：
+                    类型：number(int64)
+                    内容：帖子Id
+            正常处理（人工审核队列）：
+                返回码：202 Accepted
+                内容：
+                    类型：number(int64)
+                    内容：帖子Id
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            同时间内发送次数超过限制：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁：
+                返回码：403 Forbidden
+                内容：无 
+    获取树洞评论审核情况：GET /Treehollow/CommentStatus：
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：树洞评论Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                类型：number(enum)
+                内容：
+                    0：等待审核（人工队列）
+                    1：审核通过
+                    2：审核不通过
+    获取树洞内容：GET /Treehollow/Index
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：树洞Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    Content：
+                        类型：string
+                        内容：树洞正文
+                        内容：发送者Id
+                    SendTime：
+                        类型：string(ISO8601日期)
+                        内容：发送时间
+                    Comments：
+                        类型：array
+                            Content：
+                                类型：string
+                                内容：评论正文
+                            SendTime：
+                                类型：string(ISO8601日期)
+                                内容：发送时间
+                        内容：所有审核过的评论
+            树洞不存在：
+                返回码：404 Not Found
+                内容：无
+            树洞正在被审核/树洞审核不通过:
+                返回码：451 Unavailable For Legal Reasons
+                内容：无
+    获取树洞列表：GET /Treehollow/All
+        发送：
+            Query：无
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：树洞Id
+                        Content：
+                            类型：string
+                            内容：树洞内容
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        CommentNumber：
+                            类型：number(int64)
+                            内容：评论总数
+                    内容：树洞列表
+
+全局消息操作：
+    查询对当前用户是否有新的全局消息：GET /GlobalMessage/Check
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            获取成功：
+                内容：
+                    类型：bool
+                    内容：是否有新的全局消息
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+    获取所有全局消息：GET /GlobalMessage/All
+        发送：
+            Query：无
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：全局消息Id
+                        Title：
+                            类型：string
+                            内容：全局消息标题
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                    内容：全局消息列表
+    获取全局消息内容：GET /GlobalMessage/Index
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：全局消息Id
+            Body：无
+            Header：无
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    Title：
+                        类型：string
+                        内容：全局消息标题
+                    Content：
+                        类型：string
+                        内容：全局消息正文
+                    SenderName：
+                        类型：string
+                        内容：发送者名称
+                    SnderId：
+                        类型：number(int64)
+                        内容：发送者Id
+                    SendTime：
+                        类型：string(ISO8601日期)
+                        内容：发送时间
+            全局消息不存在：
+                返回码：404 Not Found
+                内容：无
+
+私信操作：
+    发送私信：POST /PrivateMessage/Send
+        发送：
+            Query：无
+            Body：
+                From：
+                    类型：number(int64)
+                    内容：接收者Id
+                Content：
+                    类型：string
+                    内容：要发送的信息
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理（审核通过）：
+                返回码：204 No Content
+                内容：无
+            正常处理（人工审核队列）：
+                返回码：202 Accepted
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            每日向没有回复的用户发送的消息超过指定数量：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁：
+                返回码：403 Forbidden
+                内容：无 
+    获取私信用户列表：GET /PrivateMessage/UserList
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理：
+                类型：array
+                    UserId：
+                        类型：number(int64)
+                        内容：用户Id
+                    UserName：
+                        类型：string
+                        内容：用户名
+                    LastMessage：
+                        类型：string
+                        内容：发送或接收的最后一条消息
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+    查看私信列表：GET /PrivateMessage/ToUser
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：要查询的私信消息的目标用户
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理：
+                类型：array
+                    Id：
+                        类型：number(int64)
+                        内容：私信Id
+                    Checked：
+                        类型：bool
+                        内容：私信是否经过审查
+                        备注：别人给你发的每审查的私信你是拿不到的
+                    Content：
+                        类型：string
+                        内容：私信文本
+                内容：所有可见私信
+
+管理操作：
+    锁定/解锁账户：PUT /Admin/SetAccountLockStatus
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要更改锁定状态的账户Id
+                Status：
+                    类型：bool
+                    内容：要更改的锁定状态
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定用户：
+                返回码：404 Not Found
+                Body：无
+    设置账户封禁时间：
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要更改锁定状态的账户Id
+                To：
+                    类型：string(ISO8601日期)
+                    内容：解封日期
+         接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定用户：
+                返回码：404 Not Found
+                Body：无
+    强行重置账户邮箱：PUT /Admin/ForceSetEmail
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要重置邮箱的账户Id
+                Email：
+                    类型：string
+                    内容：新邮箱
+            Header：
+                Authorization：管理员用户JWT
+            备注：会自动重发确认邮箱请求
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定用户：
+                返回码：404 Not Found
+                Body：无
+    强行重置账户名：PUT /Admin/ForceSetName
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要重置邮箱的账户Id
+                Email：
+                    类型：string
+                    内容：新用户名
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定用户：
+                返回码：404 Not Found
+                Body：无
+    强行重置账户密码：PUT /Admin/ForceSetPassword
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要重置邮箱的账户Id
+                Password：
+                    类型：string(base64)
+                    内容：用户密码哈希值，算法为base64(sha256(utf8encode(password)))
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定用户：
+                返回码：404 Not Found
+                Body：无
+    获取未审查帖子列表：GET /Admin/UncheckedPostList
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：200 OK
+                Body：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：帖子Id
+                        Title：
+                            类型：string
+                            内容：帖子标题
+                        Content：
+                            类型：string
+                            内容：帖子正文
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                    内容：未被审查的帖子列表
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+    进行审查：PUT /Admin/CheckPost
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要被审查的帖子Id
+                Result：
+                    类型：bool
+                    内容：是否通过审查
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定帖子：
+                返回码：404 Not Found
+                Body：无
+    获取未审查帖子评论列表：GET /Admin/UncheckedPostCommentList
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：200 OK
+                Body：
+                    类型：array
+                        CommentId：
+                            类型：number(int64)
+                            内容：帖子评论Id
+                        PostId：
+                            类型：number(int64)
+                            内容：帖子Id
+                        Content：
+                            类型：string
+                            内容：帖子评论正文
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                    内容：未被审查的帖子列表
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+    进行审查：PUT /Admin/CheckPostComment
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要被审查的帖子评论Id
+                Result：
+                    类型：bool
+                    内容：是否通过审查
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定评论：
+                返回码：404 Not Found
+                Body：无
+    获取未审查树洞列表：GET /Admin/UncheckedTreehollowList
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：200 OK
+                Body：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：树洞Id
+                        Title：
+                            类型：string
+                            内容：树洞标题
+                        Content：
+                            类型：string
+                            内容：树洞正文
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                    内容：未被审查的树洞列表
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+    进行审查：PUT /Admin/CheckTreehollow
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要被审查的树洞Id
+                Result：
+                    类型：bool
+                    内容：是否通过审查
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定树洞：
+                返回码：404 Not Found
+                Body：无
+    获取未审查树洞评论列表：GET /Admin/UncheckedTreehollowCommentList
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：200 OK
+                Body：
+                    类型：array
+                        CommentId：
+                            类型：number(int64)
+                            内容：树洞评论Id
+                        TreehollowId：
+                            类型：number(int64)
+                            内容：树洞Id
+                        Content：
+                            类型：string
+                            内容：树洞评论正文
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                    内容：未被审查的树洞列表
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+    进行审查：PUT /Admin/CheckTreehollowComment
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要被审查的树洞评论Id
+                Result：
+                    类型：bool
+                    内容：是否通过审查
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定评论：
+                返回码：404 Not Found
+                Body：无
+    上传全局信息：PUT /Admin/NewGlobalMessage
+        发送：
+            Query：无
+            Body：
+                Title：
+                    类型：string
+                    内容：全局消息标题
+                Content：
+                    类型：string
+                    内容：全局消息内容
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+    获取未审查私信列表：GET /Admin/UncheckedPrivateMessageList
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                Body：
+                    类型：array
+                        MessageId：
+                            类型：number(int64)
+                            内容：私信Id
+                        FromName：
+                            类型：string
+                            内容：发送者名称
+                        FromId：
+                            类型：number(int64)
+                            内容：发送者Id
+                        ToName：
+                            类型：string
+                            内容：接收者名称
+                        ToId：
+                            类型：number
+                            内容：接收者Id
+                        Content：
+                            类型：string
+                            内容：私信内容
+                内容：所有未被审查的私信
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+    进行审查：PUT /Admin/CheckPrivateMessage
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：要被审查的私信Id
+                Result：
+                    类型：bool
+                    内容：是否通过审查
+            Header：
+                Authorization：管理员用户JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                Body：无
+            未提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                Body：无
+            JWT不是管理员的：
+                返回码：403 Forbidden
+                Body：无
+            没有指定私信：
+                返回码：404 Not Found
+                Body：无
