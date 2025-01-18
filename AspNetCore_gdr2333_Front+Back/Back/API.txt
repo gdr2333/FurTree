@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250115B
+修订250118A
 
 备注：
     如无特殊标注，Body均为JSON
@@ -19,7 +19,7 @@ df1050 后端 API列表
                         类型：string(base64)
                         内容：base64编码的验证码图片（格式为image/png）
                     Id：
-                        类型：number(int64)
+                        类型：string(guid)
                         内容：验证码Id
 
 账号操作：
@@ -37,7 +37,7 @@ df1050 后端 API列表
                     类型：string(base64)
                     内容：用户密码哈希值，算法为base64(sha256(utf8encode(password)))
                 CapchaId：
-                    类型：number(int64)
+                    类型：string(guid)
                     内容：验证码Id
                 CapchaResult：
                     类型：string
@@ -61,7 +61,7 @@ df1050 后端 API列表
                     类型：string
                     内容：用户邮箱
                 CapchaId：
-                    类型：number(int64)
+                    类型：string(guid)
                     内容：验证码Id
                 CapchaResult：
                     类型：string
@@ -97,7 +97,7 @@ df1050 后端 API列表
                     类型：string(base64)
                     内容：用户密码哈希值，算法为base64(sha256(utf8encode(password)))
                 CapchaId：
-                    类型：number(int64)
+                    类型：string(guid)
                     内容：验证码Id
                 CapchaResult：
                     类型：string

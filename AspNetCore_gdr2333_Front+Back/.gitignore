@@ -401,3 +401,4 @@ FodyWeavers.xsd
 
 #database
 *.db
+*.db-*
