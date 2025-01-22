@@ -1,18 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Back.Types.DataBase
+namespace Back.Types.DataBase;
+
+public class Capcha
 {
-    public class Capcha(string guid, byte[] result)
+    [Key]
+    public string Guid { get; set; }
+
+    public string Result { get; set; }
+
+    public DateTime DeleteAt { get; set; }
+
+    public Capcha(string guid, string result)
     {
-        [Key]
-        public string Guid { get; set; } = guid;
+        Guid = guid;
+        Result = result;
+        DeleteAt = DateTime.Now.AddHours(1);
+    }
 
-        public byte[] Result { get; set; } = result;
-
-        public DateTime DeleteAt { get; set; } = DateTime.Now.AddHours(1);
-
-        public Capcha() : this("", [])
-        {
-        }
+    public Capcha()
+    {
     }
 }

@@ -1,28 +1,38 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Back.Types.DataBase
+namespace Back.Types.DataBase;
+
+public class Treehollow
 {
-    public class Treehollow(long senderId, string content, bool isPublic)
+    [Key]
+    public long TreehollowId { get; set; }
+
+    public long SenderId { get; set; }
+
+    public string Content { get; set; }
+
+    public DateTime SendTime { get; set; }
+
+    public bool Checked { get; set; }
+
+    public bool CheckSuccess { get; set; }
+
+    public bool IsPublic { get; set; }
+
+    public bool Deleted { get; set; }
+
+    public Treehollow(long senderId, string content, bool isPublic)
     {
-        [Key]
-        public long TreehollowId { get; set; }
+        SenderId = senderId;
+        Content = content;
+        IsPublic = isPublic;
+        SendTime = DateTime.Now;
+        Checked = false;
+        CheckSuccess = false;
+        Deleted = false;
+    }
 
-        public long SenderId { get; set; } = senderId;
-
-        public string Content { get; set; } = content;
-
-        public DateTime SendTime { get; set; } = DateTime.Now;
-
-        public bool Checked { get; set; } = false;
-
-        public bool CheckSuccess { get; set; } = false;
-
-        public bool IsPublic { get; set; } = isPublic;
-
-        public bool Deleted { get; set; } = false;
-
-        public Treehollow() : this(0, "", true)
-        {
-        }
+    public Treehollow()
+    {
     }
 }

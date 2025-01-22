@@ -1,28 +1,28 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 
-namespace Back.Types.DataBase
+namespace Back.Types.DataBase;
+
+public class EmailConfirmCode
 {
-    public class EmailConfirmCode
+    [Key]
+    public string ConfirmCode { get; set; }
+
+    public string ToEmail { get; set; }
+
+    public long AccountId { get; set; }
+
+    public DateTime DeleteAt { get; set; }
+
+    public EmailConfirmCode(string toEmail, long accountId)
     {
-        [Key]
-        public string ConfirmCode { get; set; }
+        ToEmail = toEmail;
+        ConfirmCode = Guid.NewGuid().ToString();
+        DeleteAt = DateTime.Now.AddDays(1);
+        AccountId = accountId;
+    }
 
-        public string ToEmail { get; set; }
-
-        public DateTime DeleteAt { get; set; }
-
-        public EmailConfirmCode(string toEmail)
-        {
-            var buffer = new byte[15];
-            ToEmail = toEmail;
-            RandomNumberGenerator.Fill(buffer);
-            ConfirmCode = Convert.ToBase64String(buffer);
-            DeleteAt = DateTime.Now.AddDays(1);
-        }
-
-        public EmailConfirmCode() : this("")
-        {
-        }
+    public EmailConfirmCode()
+    {
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace Back.Types.Interface
+﻿namespace Back.Types.Interface;
+
+public interface IEmailSender
 {
-    public interface IEmailSender
-    {
-        Task SendEmail(string target, string subject, string content);
-    }
+    Task SendEmail(string target, string subject, string content);
 }
