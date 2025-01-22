@@ -1,34 +1,17 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using Back.Types.DataBase;
+﻿using Back.Types.DataBase;
 using Back.Types.Interface;
 using Back.Types.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Shared.Request;
 
 namespace Back.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory, IEmailSender emailSender, JwtHelper jwtHelper) : ControllerBase
+public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory, IEmailSender emailSender, JwtHelper jwtHelper) : ControllerBaseEx(dbContextFactory)
 {
-    private IActionResult? ValidCapcha(string capchaId, string capchaInput)
-    {
-        using var dbContext = dbContextFactory.CreateDbContext();
-        var capcha = dbContext.Capchas.Find(capchaId);
-        //不管发生什么，这个验证码都得吊销了
-        if (capcha is not null)
-        {
-            dbContext.Capchas.Remove(capcha);
-            dbContext.SaveChanges();
-        }
-        if (capcha is null || capcha.Result != capchaInput)
-            return BadRequest();
-        return null;
-    }
-
     [HttpPut]
     public async Task<IActionResult> Create(CreateAccountRequest request)
     {
@@ -48,14 +31,14 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
     public IActionResult Confirm([FromQuery] string requestId)
     {
         using var dbContext = dbContextFactory.CreateDbContext();
-        if(string.IsNullOrEmpty(requestId))
+        if (string.IsNullOrEmpty(requestId))
             return BadRequest();
         var confirmTarget = dbContext.EmailConfirmCodes.Find(requestId);
         if (confirmTarget is null)
             return NotFound();
         dbContext.SaveChanges();
         var confirmUser = dbContext.Accounts.Find(confirmTarget.AccountId);
-        if(confirmUser is null)
+        if (confirmUser is null)
             return NotFound();
         if (confirmUser.EmailConfired)
             return Conflict();
@@ -72,7 +55,7 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
         var account = (from acc in dbContext.Accounts where acc.Email == email select acc).FirstOrDefault();
         if (account is null)
             return NotFound();
-        if(account.EmailConfired)
+        if (account.EmailConfired)
             return Conflict();
         if (DateTime.Now - account.LastConfirmEmailSendTime <= new TimeSpan(1, 0, 0))
             return StatusCode(StatusCodes.Status429TooManyRequests);
@@ -103,7 +86,7 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
             return vcres;
         using var dbContext = dbContextFactory.CreateDbContext();
         var user = (from account in dbContext.Accounts where account.Email == request.Name || account.Name == request.Name select account).FirstOrDefault();
-        if(user is null)
+        if (user is null)
             return NotFound();
         if (user.Locked)
             return Forbid();
@@ -111,20 +94,6 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
             return Ok(jwtHelper.CreateToken(user.IsAdmin, user.Id));
         else
             return Unauthorized();
-    }
-
-    private Account? GetUserFromJwt()
-    {
-        var authHeader = Request.Headers.Authorization;
-        if (authHeader.IsNullOrEmpty())
-            return null;
-        var dbContext = dbContextFactory.CreateDbContext();
-        var handler = new JwtSecurityTokenHandler();
-        var jwtSecurityToken = handler.ReadJwtToken(authHeader);
-        var claimString = (from claim in jwtSecurityToken.Claims where claim.Type == "UserId" select claim)?.FirstOrDefault()?.Value;
-        if (claimString.IsNullOrEmpty())
-            return null;
-        return dbContext.Accounts.Find(long.Parse(claimString));
     }
 
     [Authorize]
@@ -149,12 +118,12 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
     [HttpPut]
     public async Task<IActionResult> Email(string newEmail)
     {
-        if(newEmail.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(newEmail))
             return BadRequest();
         var user = GetUserFromJwt();
         if (user is null)
             return Unauthorized();
-        if(user.Email == newEmail)
+        if (user.Email == newEmail)
             return Conflict();
         var dbContext = dbContextFactory.CreateDbContext();
         var targetUser = dbContext.Accounts.Find(user.Id);
@@ -171,7 +140,7 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
     [HttpPut]
     public IActionResult Password(string newPaswordHash)
     {
-        if(newPaswordHash.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(newPaswordHash))
             return BadRequest();
         var user = GetUserFromJwt();
         if (user is null)

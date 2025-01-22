@@ -1,4 +1,5 @@
 ﻿using Back.Types.DataBase;
+using Back.Types.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shared.Results;
@@ -8,7 +9,7 @@ namespace Back.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class CapchaController(IDbContextFactory<MainDataBase> dbContextFactory) : ControllerBase
+public class CapchaController(IDbContextFactory<MainDataBase> dbContextFactory) : ControllerBaseEx(dbContextFactory)
 {
     [HttpGet]
     public IActionResult GetCapcha()

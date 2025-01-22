@@ -2,9 +2,9 @@ using System.Text;
 using Back.Types.DataBase;
 using Back.Types.Interface;
 using Back.Types.Utils;
+using Baidu.Aip.ContentCensor;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +16,7 @@ builder.Services.AddDbContextFactory<MainDataBase>(opt => opt.UseSqlite());
 builder.Services.AddSingleton<IEmailSender>((_) => new EmailSender(builder.Configuration));
 builder.Services.AddHostedService<MyBackgroundService>();
 builder.Services.AddSingleton(new JwtHelper(builder.Configuration));
+builder.Services.AddSingleton((_) => new TextCensor(builder.Configuration["Baidu:ApiKey"], builder.Configuration["Baidu:SecretKey"]) { AppId = builder.Configuration["Baidu:AppId"], Timeout = 60000 });
 
 builder.Services.AddAuthentication(options =>
 {

@@ -213,9 +213,12 @@ df1050 后端 API列表
             同时间内发送次数超过限制：
                 返回码：429 Too Many Requests
                 内容：无
-            账号被封禁：
+            账号被封禁/账号被锁定：
                 返回码：403 Forbidden
                 内容：无 
+            内容或标题无效：
+                返回码：400 Bad Request
+                内容：无
     获取帖子审核情况：GET /Post/Status：
         发送：
             Query：
@@ -232,6 +235,9 @@ df1050 后端 API列表
                     0：等待审核（人工队列）
                     1：审核通过
                     2：审核不通过
+            帖子不存在：
+                返回码：404 Not Found
+                内容：无
     上传帖子评论：POST /Post/NewComment
         发送：
             Query：无
@@ -261,9 +267,15 @@ df1050 后端 API列表
             同时间内发送次数超过限制：
                 返回码：429 Too Many Requests
                 内容：无
-            账号被封禁：
+            账号被封禁/账号被锁定：
                 返回码：403 Forbidden
-                内容：无 
+                内容：无
+            帖子不存在：
+                返回码：404 Not Found
+                内容：无
+            内容无效：
+                返回码：400 Bad Request
+                内容：无
     获取帖子评论审核情况：GET /Post/CommentStatus：
         发送：
             Query：
@@ -280,6 +292,9 @@ df1050 后端 API列表
                     0：等待审核（人工队列）
                     1：审核通过
                     2：审核不通过
+            评论不存在：
+                返回码：404 Not Found
+                内容：无
     获取帖子内容：GET /Post/Index
         发送：
             Query：
@@ -384,7 +399,7 @@ df1050 后端 API列表
             同时间内发送次数超过限制：
                 返回码：429 Too Many Requests
                 内容：无
-            账号被封禁：
+            账号被封禁/账号被锁定：
                 返回码：403 Forbidden
                 内容：无 
     获取树洞审核情况：GET /Treehollow/Status：
@@ -432,7 +447,7 @@ df1050 后端 API列表
             同时间内发送次数超过限制：
                 返回码：429 Too Many Requests
                 内容：无
-            账号被封禁：
+            账号被封禁/账号被锁定：
                 返回码：403 Forbidden
                 内容：无 
     获取树洞评论审核情况：GET /Treehollow/CommentStatus：
@@ -607,7 +622,7 @@ df1050 后端 API列表
             每日向没有回复的用户发送的消息超过指定数量：
                 返回码：429 Too Many Requests
                 内容：无
-            账号被封禁：
+            账号被封禁/账号被锁定：
                 返回码：403 Forbidden
                 内容：无 
     获取私信用户列表：GET /PrivateMessage/UserList

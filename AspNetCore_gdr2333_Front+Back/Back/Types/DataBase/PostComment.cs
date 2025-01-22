@@ -12,8 +12,6 @@ public class PostComment
 
     public long SenderId { get; set; }
 
-    public string Title { get; set; }
-
     public string Content { get; set; }
 
     public DateTime SendTime { get; set; }
@@ -24,11 +22,10 @@ public class PostComment
 
     public bool Deleted { get; set; }
 
-    public PostComment(long postId, long senderId, string title, string content)
+    public PostComment(long postId, long senderId, string content)
     {
         PostId = postId;
         SenderId = senderId;
-        Title = title;
         Content = content;
         SendTime = DateTime.Now;
         Checked = false;
