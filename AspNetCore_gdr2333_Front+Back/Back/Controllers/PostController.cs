@@ -55,11 +55,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             post.Checked = true;
             post.CheckSuccess = true;
             dbContext.SaveChanges();
-            //idlot ASP.NET Core, bypass it
-            var result = Created();
-            result.Value = post.PostId;
-            _logger.LogInformation("帖子发送成功：状态：自动审查成功");
-            return result;
+            return Ok(post.PostId);
         }
         else
         {
@@ -88,7 +84,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
     }
 
     [Authorize]
-    [HttpPost]
+    [HttpPut]
     public IActionResult NewComment(NewPostCommentRequest request)
     {
         _logger.LogInformation($"开始发布评论流程：帖子ID：{request.PostId}，评论内容：{request.Content}");
@@ -134,10 +130,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             comment.CheckSuccess = true;
             dbContext.SaveChanges();
             _logger.LogInformation($"评发布查成功：状态：自动审查成功");
-            //idlot ASP.NET Core, bypass it
-            var result = Created();
-            result.Value = comment.CommentId;
-            return result;
+            return Ok(post.PostId);
         }
         else
         {
@@ -184,17 +177,17 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         var comments = (from comment in dbContext.PostComments
                         where comment.CheckSuccess && !comment.Deleted && comment.PostId == Id
                         orderby comment.SendTime descending
-                        select new Shared.Results.PostComment()
-                        {
-                            Content = comment.Content,
-                            SenderId = comment.SenderId,
-                            SendTime = comment.SendTime,
-                            SenderName = dbContext.Accounts.Find(comment.SenderId).Name
-                        }
-                        ).ToArray();
+                        select comment).ToArray();
+        var commentsResult = Array.ConvertAll(comments, comment => new Shared.Results.PostComment()
+        {
+            Content = comment.Content,
+            SenderId = comment.SenderId,
+            SenderName = dbContext.Accounts.Find(comment.SenderId).Name,
+            SendTime = comment.SendTime
+        });
         var result = new GetPostIndexResult()
         {
-            Comments = comments,
+            Comments = commentsResult,
             Content = post.Content,
             SenderId = post.SenderId,
             SendTime = post.SendTime,
@@ -213,16 +206,16 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         var res = (from post in dbContext.Posts
                    where post.Checked && !post.Deleted
                    orderby post.SendTime descending
-                   select new GetAllPostPart()
-                   {
-                       Id = post.PostId,
-                       CommentNuber = dbContext.PostComments.Where(comment => comment.PostId == post.PostId && !comment.Deleted).Count(),
-                       SenderId = post.SenderId,
-                       SenderName = dbContext.Accounts.Find(post.SenderId).Name,
-                       SendTime = post.SendTime,
-                       Title = post.Title
-                   }).ToArray();
+                   select post).ToArray();
         _logger.LogInformation("帖子列表获取成功");
-        return Ok(res);
+        return Ok(Array.ConvertAll(res, post => new GetAllPostPart()
+        {
+            CommentNuber = dbContext.PostComments.Where(comment => comment.PostId == post.PostId && comment.CheckSuccess && !comment.Deleted).Count(),
+            Id = post.PostId,
+            SenderId = post.SenderId,
+            SenderName = dbContext.Accounts.Find(post.SenderId).Name,
+            SendTime = post.SendTime,
+            Title = post.Title,
+        }));
     }
 }

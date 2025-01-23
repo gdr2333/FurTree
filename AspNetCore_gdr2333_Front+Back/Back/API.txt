@@ -198,7 +198,7 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理（审核通过）：
-                返回码：201 Created
+                返回码：200 OK
                 内容：
                     类型：number(int64)
                     内容：帖子Id
@@ -252,7 +252,7 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理（审核通过）：
-                返回码：201 Created
+                返回码：200 OK
                 内容：
                     类型：number(int64)
                     内容：评论Id
@@ -384,7 +384,7 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理（审核通过）：
-                返回码：201 Created
+                返回码：200 OK
                 内容：
                     类型：number(int64)
                     内容：树洞Id
@@ -412,7 +412,7 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理（审核通过）：
-                返回码：201 Created
+                返回码：200 OK
                 内容：
                     类型：number(int64)
                     内容：树洞Id
@@ -485,7 +485,7 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理（审核通过）：
-                返回码：201 Created
+                返回码：200 OK
                 内容：
                     类型：number(int64)
                     内容：帖子Id

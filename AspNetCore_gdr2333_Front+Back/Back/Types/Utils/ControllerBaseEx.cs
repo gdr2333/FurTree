@@ -29,13 +29,14 @@ public class ControllerBaseEx(IDbContextFactory<MainDataBase> dbContextFactory, 
 
     public Account? GetUserFromJwt()
     {
-        var authHeader = Request.Headers.Authorization;
+        var authHeader = Request.Headers.Authorization.ToString();
         _cbex_logger.LogInformation($"收到用户身份查询请求：Authorization头：{authHeader}");
         if (string.IsNullOrEmpty(authHeader))
         {
             _cbex_logger.LogWarning($"非法用户身份查询请求：未提交Authorization头");
             return null;
         }
+        authHeader = authHeader[7..];
         using var dbContext = dbContextFactory.CreateDbContext();
         var handler = new JwtSecurityTokenHandler();
         var jwtSecurityToken = handler.ReadJwtToken(authHeader);

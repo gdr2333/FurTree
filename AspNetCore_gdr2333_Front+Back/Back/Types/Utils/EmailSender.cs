@@ -10,7 +10,7 @@ public class EmailSender(IConfiguration config) : IEmailSender
     public async Task SendEmail(string target, string subject, string content)
     {
         using var smtpClient = new SmtpClient();
-        await smtpClient.ConnectAsync(config["EmailConfirm:SmtpAddress"]);
+        await smtpClient.ConnectAsync(config["EmailConfirm:SmtpAddress"], 465, true);
 
         var message = new MimeMessage
         {

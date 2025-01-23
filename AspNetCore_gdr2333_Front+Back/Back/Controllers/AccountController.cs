@@ -171,7 +171,7 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
 
     [Authorize]
     [HttpPut]
-    public IActionResult Name(string newName)
+    public IActionResult Name([FromBody] string newName)
     {
         _logger.LogInformation($"开始修改用户名流程，新用户名：{newName}");
         if (string.IsNullOrEmpty(newName))
@@ -200,7 +200,7 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
 
     [Authorize]
     [HttpPut]
-    public async Task<IActionResult> Email(string newEmail)
+    public async Task<IActionResult> Email([FromBody] string newEmail)
     {
         _logger.LogInformation($"开始修改邮箱流程，新邮箱：{newEmail}");
         if (string.IsNullOrEmpty(newEmail))
@@ -223,20 +223,20 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
         var targetUser = dbContext.Accounts.Find(user.Id);
         targetUser.Email = newEmail;
         targetUser.EmailConfired = false;
-        dbContext.SaveChanges();
         var req = await SendConfirmEmailInternel(newEmail);
         if (req is not null)
         {
             _logger.LogWarning("修改邮箱失败：发送确认邮件过程中出现错误");
             return req;
         }
+        dbContext.SaveChanges();
         _logger.LogInformation("修改邮箱成功");
         return NoContent();
     }
 
     [Authorize]
     [HttpPut]
-    public IActionResult Password(string newPaswordHash)
+    public IActionResult Password([FromBody] string newPaswordHash)
     {
         _logger.LogInformation("开始修改密码流程");
         if (string.IsNullOrEmpty(newPaswordHash))
