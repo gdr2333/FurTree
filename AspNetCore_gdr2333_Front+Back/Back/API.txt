@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250118A
+修订250123A
 
 备注：
     如无特殊标注，Body均为JSON
@@ -184,7 +184,7 @@ df1050 后端 API列表
                 内容：无
 
 帖子操作：
-    上传帖子：POST /Post/New
+    上传帖子：PUT /Post/New
         发送：
             Query：无
             Body：
@@ -238,7 +238,7 @@ df1050 后端 API列表
             帖子不存在：
                 返回码：404 Not Found
                 内容：无
-    上传帖子评论：POST /Post/NewComment
+    上传帖子评论：PUT /Post/NewComment
         发送：
             Query：无
             Body：
@@ -374,7 +374,7 @@ df1050 后端 API列表
                     内容：帖子列表
 
 树洞操作：
-    上传树洞：POST /Treehollow/New
+    上传树洞：PUT /Treehollow/New
         发送：
             Query：无
             Body：
@@ -400,6 +400,59 @@ df1050 后端 API列表
                 返回码：429 Too Many Requests
                 内容：无
             账号被封禁/账号被锁定：
+                返回码：403 Forbidden
+                内容：无 
+    上传非公开树洞：PUT /Treehollow/NewNotPublic
+        发送：
+            Query：无
+            Body：
+                类型：string
+                内容：树洞正文
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理（审核通过）：
+                返回码：201 Created
+                内容：
+                    类型：number(int64)
+                    内容：树洞Id
+            正常处理（人工审核队列）：
+                返回码：202 Accepted
+                内容：
+                    类型：number(int64)
+                    内容：树洞Id
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            同时间内发送次数超过限制：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁/账号被锁定：
+                返回码：403 Forbidden
+                内容：无 
+    更改树洞公开情况：PUT /Treehollow/PublicStatus
+        发送：
+            Query：无
+            Body：
+                Id：
+                    类型：number(int64)
+                    内容：树洞Id
+                IsPublic：
+                    类型：bool
+                    内容：要更改为的公开状态
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            正常处理：
+                返回码：204 No Content
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            同时间内发送次数超过限制：
+                返回码：429 Too Many Requests
+                内容：无
+            账号被封禁/账号被锁定/更改他人树洞：
                 返回码：403 Forbidden
                 内容：无 
     获取树洞审核情况：GET /Treehollow/Status：
@@ -597,7 +650,7 @@ df1050 后端 API列表
                 内容：无
 
 私信操作：
-    发送私信：POST /PrivateMessage/Send
+    发送私信：PUT /PrivateMessage/Send
         发送：
             Query：无
             Body：

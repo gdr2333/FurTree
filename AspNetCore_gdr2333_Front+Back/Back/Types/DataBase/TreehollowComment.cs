@@ -33,7 +33,7 @@ public class TreehollowComment
         Deleted = false;
     }
 
-    public TreehollowComment() : this(0, 0, "")
+    public TreehollowComment()
     {
     }
 }

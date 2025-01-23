@@ -9,14 +9,17 @@ namespace Back.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class CapchaController(IDbContextFactory<MainDataBase> dbContextFactory) : ControllerBaseEx(dbContextFactory)
+public class CapchaController(IDbContextFactory<MainDataBase> dbContextFactory, ILoggerFactory loggerFactory) : ControllerBaseEx(dbContextFactory, loggerFactory)
 {
+    private ILogger<CapchaController> _logger = loggerFactory.CreateLogger<CapchaController>();
     [HttpGet]
     public IActionResult GetCapcha()
     {
+        _logger.LogInformation("生成验证码流程开始");
         // Step 0: Initialize text
         string capchaCharList = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         string capchaChars = new(Enumerable.Range(1, 6).Select(i => capchaCharList[Random.Shared.Next(capchaCharList.Length)]).ToArray());
+        _logger.LogInformation($"新验证码：{capchaChars}");
 
         // Step 1: Initialize renderer
         using var typeface = SKTypeface.FromFile(Environment.CurrentDirectory + "/Fonts/IntelOneMono-Regular.otf");
@@ -67,6 +70,8 @@ public class CapchaController(IDbContextFactory<MainDataBase> dbContextFactory) 
             Image = Convert.ToBase64String(data)
         };
 
+        _logger.LogInformation($"新验证码Id：{capcha.Guid}");
+        _logger.LogInformation("验证码生成完成");
         return Ok(result);
     }
 }
