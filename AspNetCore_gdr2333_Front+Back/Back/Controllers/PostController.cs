@@ -4,6 +4,7 @@ using Baidu.Aip.ContentCensor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Shared.Request;
 using Shared.Results;
 using static Back.Types.Utils.StaticValues;
@@ -194,7 +195,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             Title = post.Title,
             SenderName = dbContext.Accounts.Find(post.SenderId).Name
         };
-        _logger.LogWarning("帖子内容获取成功");
+        _logger.LogInformation("帖子内容获取成功");
         return Ok(result);
     }
 
@@ -217,5 +218,61 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             SendTime = post.SendTime,
             Title = post.Title,
         }));
+    }
+
+    [HttpDelete]
+    public IActionResult Delete([FromQuery] long Id)
+    {
+        _logger.LogInformation($"开始删除帖子：Id：{Id}");
+        var user = GetUserFromJwt();
+        using var dbContext = dbContextFactory.CreateDbContext();
+        var post = dbContext.Posts.Find(Id);
+        if(post is null)
+        {
+            _logger.LogWarning("帖子不存在");
+            return NotFound();
+        }
+        if (user is null)
+        {
+            _logger.LogWarning("JWT无效");
+            return Unauthorized();
+        }
+        if(post.SenderId != user.Id && !user.IsAdmin)
+        {
+            _logger.LogWarning("用户越权访问");
+            return Forbid();
+        }
+        post.Deleted = true;
+        dbContext.SaveChanges();
+        _logger.LogInformation("删除成功");
+        return Ok();
+    }
+
+    [HttpDelete]
+    public IActionResult DeleteComment([FromQuery] long Id)
+    {
+        _logger.LogInformation($"开始删除帖子：Id：{Id}");
+        var user = GetUserFromJwt();
+        using var dbContext = dbContextFactory.CreateDbContext();
+        var comment = dbContext.PostComments.Find(Id);
+        if (comment is null)
+        {
+            _logger.LogWarning("不存在");
+            return NotFound();
+        }
+        if (user is null)
+        {
+            _logger.LogWarning("JWT无效");
+            return Unauthorized();
+        }
+        if (comment.SenderId != user.Id && !user.IsAdmin)
+        {
+            _logger.LogWarning("用户越权访问");
+            return Forbid();
+        }
+        comment.Deleted = true;
+        dbContext.SaveChanges();
+        _logger.LogInformation("删除成功");
+        return Ok();
     }
 }

@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250123A
+修订250123B
 
 备注：
     如无特殊标注，Body均为JSON
@@ -372,6 +372,50 @@ df1050 后端 API列表
                             类型：number(int64)
                             内容：评论总数
                     内容：帖子列表
+    删除帖子：DELETE /Post/Delete
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：要删除的帖子Id
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            删除成功：
+                状态码：200 OK
+                内容：无
+            帖子不存在：
+                返回码：404 Not Found
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            无权删除：
+                返回码：403 Forbidden
+                内容：无
+    删除帖子：DELETE /Post/DeleteComment
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：要删除的评论Id
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            删除成功：
+                状态码：200 OK
+                内容：无
+            帖子不存在：
+                返回码：404 Not Found
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            无权删除：
+                返回码：403 Forbidden
+                内容：无
 
 树洞操作：
     上传树洞：PUT /Treehollow/New
