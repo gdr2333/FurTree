@@ -966,7 +966,7 @@ df1050 后端 API列表
             没有指定用户：
                 返回码：404 Not Found
                 Body：无
-    设置账户封禁时间：
+    设置账户封禁时间 PUT /Admin/SetAccountBannedTo：
         发送：
             Query：无
             Body：

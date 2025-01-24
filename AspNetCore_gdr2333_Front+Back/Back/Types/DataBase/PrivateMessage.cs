@@ -19,6 +19,8 @@ public class PrivateMessage
 
     public bool CheckSuccess { get; set; }
 
+    public bool Readed { get; set; }
+
     public PrivateMessage(long senderId, long receiverId, string content)
     {
         SenderId = senderId;
@@ -27,6 +29,7 @@ public class PrivateMessage
         SendTime = DateTime.Now;
         Checked = false;
         CheckSuccess = false;
+        Readed = false;
     }
 
     public PrivateMessage()
