@@ -11,7 +11,7 @@ namespace Back.Controllers;
 [ApiController]
 public class CapchaController(IDbContextFactory<MainDataBase> dbContextFactory, ILoggerFactory loggerFactory) : ControllerBaseEx(dbContextFactory, loggerFactory)
 {
-    private ILogger<CapchaController> _logger = loggerFactory.CreateLogger<CapchaController>();
+    private readonly ILogger<CapchaController> _logger = loggerFactory.CreateLogger<CapchaController>();
     [HttpGet]
     public IActionResult GetCapcha()
     {

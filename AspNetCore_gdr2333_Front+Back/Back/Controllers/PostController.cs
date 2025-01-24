@@ -4,8 +4,6 @@ using Baidu.Aip.ContentCensor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.Extensions.Hosting;
 using Shared.Request;
 using Shared.Results;
 using static Back.Types.Utils.StaticValues;
@@ -16,7 +14,7 @@ namespace Back.Controllers;
 [ApiController]
 public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, TextCensor baiduAi, ILoggerFactory loggerFactory) : ControllerBaseEx(dbContextFactory, loggerFactory)
 {
-    private ILogger<PostController> _logger = loggerFactory.CreateLogger<PostController>();
+    private readonly ILogger<PostController> _logger = loggerFactory.CreateLogger<PostController>();
     [Authorize]
     [HttpPut]
     public IActionResult New(NewPostRequest request)
@@ -229,7 +227,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         var user = GetUserFromJwt();
         using var dbContext = dbContextFactory.CreateDbContext();
         var post = dbContext.Posts.Find(Id);
-        if(post is null)
+        if (post is null)
         {
             _logger.LogWarning("帖子不存在");
             return NotFound();
@@ -239,7 +237,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             _logger.LogWarning("JWT无效");
             return Unauthorized();
         }
-        if(UserLockedOrBanned(user) || (post.SenderId != user.Id && !user.IsAdmin))
+        if (UserLockedOrBanned(user) || (post.SenderId != user.Id && !user.IsAdmin))
         {
             _logger.LogWarning("用户越权访问");
             return Forbid();
@@ -284,17 +282,17 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
     {
         var user = GetUserFromJwt();
         _logger.LogInformation($"开始获取可管理帖子列表：用户：{user?.Name}，管理员状态：{user?.IsAdmin}");
-        if(user is null)
+        if (user is null)
         {
             _logger.LogWarning("找不到用户信息，返回401......");
             return Unauthorized();
         }
-        if(UserLockedOrBanned(user))
+        if (UserLockedOrBanned(user))
         {
             _logger.LogWarning("用户被封禁或锁定，返回403......");
             return Forbid();
         }
-        if(user.IsAdmin)
+        if (user.IsAdmin)
         {
             _logger.LogInformation("用户是管理员，返回所有帖子......");
             using var dbContext = dbContextFactory.CreateDbContext();

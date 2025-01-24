@@ -12,7 +12,7 @@ namespace Back.Controllers;
 [ApiController]
 public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory, IEmailSender emailSender, JwtHelper jwtHelper, ILoggerFactory loggerFactory) : ControllerBaseEx(dbContextFactory, loggerFactory)
 {
-    private ILogger<AccountController> _logger = loggerFactory.CreateLogger<AccountController>();
+    private readonly ILogger<AccountController> _logger = loggerFactory.CreateLogger<AccountController>();
     [HttpPut]
     public async Task<IActionResult> Create(CreateAccountRequest request)
     {
@@ -33,7 +33,7 @@ public class AccountController(IDbContextFactory<MainDataBase> dbContextFactory,
         dbContext.Accounts.Add(account);
         dbContext.SaveChanges();
         var sceir = await SendConfirmEmailInternel(request.Email);
-        if(sceir is not null)
+        if (sceir is not null)
         {
             _logger.LogWarning($"用户创建请求失败：确认邮件发送过程中出现错误");
             return sceir;
