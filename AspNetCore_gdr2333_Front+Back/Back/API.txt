@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250124C
+修订250124D
 
 备注：
     如无特殊标注，Body均为JSON
@@ -126,7 +126,7 @@ df1050 后端 API列表
             Query：无
             Body：
                 类型：string
-                内容：用户名
+                内容：新用户名
             Header：
                 Authorization：该用户登录获取的JWT
         接收：
@@ -247,7 +247,7 @@ df1050 后端 API列表
                     内容：要发送到的帖子Id
                 Content：
                     类型：string
-                    内容：帖子正文
+                    内容：帖子评论内容
             Header：
                 Authorization：该用户登录获取的JWT
         接收：
