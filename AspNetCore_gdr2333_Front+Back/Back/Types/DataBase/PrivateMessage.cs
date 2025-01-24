@@ -7,6 +7,8 @@ public class PrivateMessage
     [Key]
     public long PrivateMessageId { get; set; }
 
+    public long PrivateChatId { get; set; }
+
     public long SenderId { get; set; }
 
     public long ReceiverId { get; set; }
@@ -21,8 +23,9 @@ public class PrivateMessage
 
     public bool Readed { get; set; }
 
-    public PrivateMessage(long senderId, long receiverId, string content)
+    public PrivateMessage(long privateChatId, long senderId, long receiverId, string content)
     {
+        PrivateChatId = privateChatId;
         SenderId = senderId;
         ReceiverId = receiverId;
         Content = content;

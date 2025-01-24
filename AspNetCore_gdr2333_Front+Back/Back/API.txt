@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250124B
+修订250124C
 
 备注：
     如无特殊标注，Body均为JSON
@@ -871,7 +871,7 @@ df1050 后端 API列表
         发送：
             Query：无
             Body：
-                From：
+                To：
                     类型：number(int64)
                     内容：接收者Id
                 Content：
@@ -903,6 +903,7 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理：
+                返回码：200 OK
                 类型：array
                     UserId：
                         类型：number(int64)
@@ -927,18 +928,29 @@ df1050 后端 API列表
                 Authorization：该用户登录获取的JWT
         接收：
             正常处理：
+                返回码：200 OK
                 类型：array
+                    IsMyMesage：
+                        类型：bool
+                        内容：消息是否由请求者发送
                     Id：
                         类型：number(int64)
                         内容：私信Id
                     Checked：
                         类型：bool
                         内容：私信是否经过审查
-                        备注：别人给你发的每审查的私信你是拿不到的
+                        备注：别人给你发的没审查的私信你是拿不到的
+                    CheckFail：
+                        类型：bool
+                        内容：是否经过审查仍未失败
+                        备注：别人给你发的没审查的私信你是拿不到的
                     Content：
                         类型：string
                         内容：私信文本
                 内容：所有可见私信
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
 
 管理操作：
     锁定/解锁账户：PUT /Admin/SetAccountLockStatus

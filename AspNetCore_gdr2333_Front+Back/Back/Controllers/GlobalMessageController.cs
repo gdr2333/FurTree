@@ -1,12 +1,9 @@
 ﻿using Back.Types.DataBase;
 using Back.Types.Utils;
-using Baidu.Aip.ContentCensor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Shared.Request;
 using Shared.Results;
-using static Back.Types.Utils.StaticValues;
 
 namespace Back.Controllers;
 
@@ -22,7 +19,7 @@ public class GlobalMessageController(IDbContextFactory<MainDataBase> dbContextFa
     {
         var user = GetUserFromJwt();
         _logger.LogInformation($"开始检查未读全局消息");
-        if(user is null)
+        if (user is null)
         {
             _logger.LogWarning($"无法获取用户信息，返回401......");
             return Unauthorized();

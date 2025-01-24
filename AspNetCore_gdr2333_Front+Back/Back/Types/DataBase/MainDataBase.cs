@@ -13,6 +13,7 @@ public class MainDataBase(ILoggerFactory loggerFactory) : DbContext
     public DbSet<TreehollowComment> TreehollowComments { get; set; }
     public DbSet<GlobalMessage> GlobalMessages { get; set; }
     public DbSet<PrivateMessage> PrivateMessages { get; set; }
+    public DbSet<PrivateChat> PrivateChats { get; set; }
 
     public ILoggerFactory LoggerFactory { get; } = loggerFactory;
 
