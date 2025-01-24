@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250123B
+修订250124A
 
 备注：
     如无特殊标注，Body均为JSON
@@ -391,7 +391,7 @@ df1050 后端 API列表
             没有提供JWT/JWT无效：
                 返回码：401 Unauthorized
                 内容：无
-            无权删除：
+            无权删除/用户被封禁或锁定：
                 返回码：403 Forbidden
                 内容：无
     删除帖子：DELETE /Post/DeleteComment
@@ -413,8 +413,71 @@ df1050 后端 API列表
             没有提供JWT/JWT无效：
                 返回码：401 Unauthorized
                 内容：无
-            无权删除：
+            无权删除/用户被封禁或锁定：
                 返回码：403 Forbidden
+                内容：无
+    获取可管理帖子列表：GET /Post/Manageable
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：帖子Id
+                        Title：
+                            类型：string
+                            内容：帖子标题
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                    内容：帖子列表
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+    获取可管理评论列表：GET /Post/ManageableComment
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        PostId：
+                            类型：number(int64)
+                            内容：帖子Id
+                        CommentId：
+                            类型：number(int64)
+                            内容：评论Id
+                        Content：
+                            类型：string
+                            内容：评论内容
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                    内容：评论列表
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
                 内容：无
 
 树洞操作：

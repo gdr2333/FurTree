@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Hosting;
 using Shared.Request;
 using Shared.Results;
 using static Back.Types.Utils.StaticValues;
@@ -165,12 +166,13 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         _logger.LogInformation($"开始获取帖子内容：Id：{Id}");
         using var dbContext = dbContextFactory.CreateDbContext();
         var post = dbContext.Posts.Find(Id);
-        if (post is null || post.Deleted)
+        var user = GetUserFromJwt();
+        if (post is null || (post.Deleted && !(user?.IsAdmin ?? false)))
         {
             _logger.LogWarning("帖子不存在或已被删除");
             return NotFound();
         }
-        if (!post.CheckSuccess)
+        if (!post.CheckSuccess && !(user?.IsAdmin ?? false))
         {
             _logger.LogWarning("帖子审查未完成或未通过");
             return StatusCode(StatusCodes.Status451UnavailableForLegalReasons);
@@ -237,7 +239,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             _logger.LogWarning("JWT无效");
             return Unauthorized();
         }
-        if(post.SenderId != user.Id && !user.IsAdmin)
+        if(UserLockedOrBanned(user) || (post.SenderId != user.Id && !user.IsAdmin))
         {
             _logger.LogWarning("用户越权访问");
             return Forbid();
@@ -265,7 +267,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             _logger.LogWarning("JWT无效");
             return Unauthorized();
         }
-        if (comment.SenderId != user.Id && !user.IsAdmin)
+        if (UserLockedOrBanned(user) || (comment.SenderId != user.Id && !user.IsAdmin))
         {
             _logger.LogWarning("用户越权访问");
             return Forbid();
@@ -274,5 +276,99 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         dbContext.SaveChanges();
         _logger.LogInformation("删除成功");
         return Ok();
+    }
+
+    [Authorize]
+    [HttpGet]
+    public IActionResult Manageable()
+    {
+        var user = GetUserFromJwt();
+        _logger.LogInformation($"开始获取可管理帖子列表：用户：{user?.Name}，管理员状态：{user?.IsAdmin}");
+        if(user is null)
+        {
+            _logger.LogWarning("找不到用户信息，返回401......");
+            return Unauthorized();
+        }
+        if(UserLockedOrBanned(user))
+        {
+            _logger.LogWarning("用户被封禁或锁定，返回403......");
+            return Forbid();
+        }
+        if(user.IsAdmin)
+        {
+            _logger.LogInformation("用户是管理员，返回所有帖子......");
+            using var dbContext = dbContextFactory.CreateDbContext();
+            var allPost = dbContext.Posts.Where(post => !post.Deleted).ToArray();
+            return Ok(Array.ConvertAll(allPost, post => new ManageablePostPart()
+            {
+                Id = post.PostId,
+                SenderId = post.SenderId,
+                SenderName = dbContext.Accounts.Find(post.SenderId).Name,
+                SendTime = post.SendTime,
+                Title = post.Title,
+            }));
+        }
+        else
+        {
+            _logger.LogInformation("用户不是管理员，返回该用户发布的帖子......");
+            using var dbContext = dbContextFactory.CreateDbContext();
+            var allPost = dbContext.Posts.Where(post => !post.Deleted && post.SenderId == user.Id).ToArray();
+            return Ok(Array.ConvertAll(allPost, post => new ManageablePostPart()
+            {
+                Id = post.PostId,
+                SenderId = post.SenderId,
+                SenderName = dbContext.Accounts.Find(post.SenderId).Name,
+                SendTime = post.SendTime,
+                Title = post.Title,
+            }));
+        }
+    }
+
+    [Authorize]
+    [HttpGet]
+    public IActionResult ManageableComment()
+    {
+        var user = GetUserFromJwt();
+        _logger.LogInformation($"开始获取可管理帖子评论列表：用户：{user?.Name}，管理员状态：{user?.IsAdmin}");
+        if (user is null)
+        {
+            _logger.LogWarning("找不到用户信息，返回401......");
+            return Unauthorized();
+        }
+        if (UserLockedOrBanned(user))
+        {
+            _logger.LogWarning("用户被封禁或锁定，返回403......");
+            return Forbid();
+        }
+        if (user.IsAdmin)
+        {
+            _logger.LogInformation("用户是管理员，返回所有帖子评论......");
+            using var dbContext = dbContextFactory.CreateDbContext();
+            var allComment = dbContext.PostComments.Where(comment => !comment.Deleted).ToArray();
+            return Ok(Array.ConvertAll(allComment, comment => new ManageablePostCommentPart()
+            {
+                PostId = comment.PostId,
+                CommentId = comment.CommentId,
+                Content = comment.Content,
+                SenderId = comment.SenderId,
+                SenderName = dbContext.Accounts.Find(comment.SenderId).Name,
+                SendTime = comment.SendTime,
+            }));
+        }
+        else
+        {
+            _logger.LogInformation("用户不是管理员，返回该用户发布的帖子......");
+            using var dbContext = dbContextFactory.CreateDbContext();
+            var allPost = dbContext.PostComments.Where(comment => !comment.Deleted && comment.SenderId == user.Id).ToArray();
+            return Ok(Array.ConvertAll(allPost, post => new ManageablePostCommentPart()
+            {
+                PostId = post.PostId,
+                CommentId = post.CommentId,
+                Content = post.Content,
+                SenderId = post.SenderId,
+                SenderName = dbContext.Accounts.Find(post.SenderId).Name,
+                SendTime = post.SendTime,
+            }));
+        }
     }
 }
