@@ -243,7 +243,7 @@ public class TreehollowController(IDbContextFactory<MainDataBase> dbContextFacto
         using var dbContext = dbContextFactory.CreateDbContext();
         var treehollow = dbContext.Treehollows.Find(Id);
         var user = GetUserFromJwt();
-        if (treehollow is null || (treehollow.Deleted && !(user?.IsAdmin ?? false)))
+        if (treehollow is null || (treehollow.Deleted && !(user?.IsAdmin ?? false)) || !treehollow.IsPublic)
         {
             _logger.LogWarning("树洞不存在或已被删除");
             return NotFound();
@@ -278,7 +278,7 @@ public class TreehollowController(IDbContextFactory<MainDataBase> dbContextFacto
         _logger.LogInformation("开始获取树洞列表");
         using var dbContext = dbContextFactory.CreateDbContext();
         var res = (from treehollow in dbContext.Treehollows
-                   where treehollow.Checked && !treehollow.Deleted
+                   where treehollow.Checked && !treehollow.Deleted && treehollow.IsPublic
                    orderby treehollow.SendTime descending
                    select treehollow).ToArray();
         _logger.LogInformation("树洞列表获取成功");

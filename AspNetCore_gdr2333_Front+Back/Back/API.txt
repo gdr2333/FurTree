@@ -1034,7 +1034,7 @@ df1050 后端 API列表
                 Id：
                     类型：number(int64)
                     内容：要重置邮箱的账户Id
-                Email：
+                Name：
                     类型：string
                     内容：新用户名
             Header：
@@ -1059,7 +1059,7 @@ df1050 后端 API列表
                 Id：
                     类型：number(int64)
                     内容：要重置邮箱的账户Id
-                Password：
+                PasswordHash：
                     类型：string(base64)
                     内容：用户密码哈希值，算法为base64(sha256(utf8encode(password)))
             Header：
@@ -1213,9 +1213,6 @@ df1050 后端 API列表
                         Id：
                             类型：number(int64)
                             内容：树洞Id
-                        Title：
-                            类型：string
-                            内容：树洞标题
                         Content：
                             类型：string
                             内容：树洞正文
@@ -1335,8 +1332,10 @@ df1050 后端 API列表
                 Authorization：管理员用户JWT
         接收：
             正常处理：
-                返回码：204 No Content
-                Body：无
+                返回码：200 OK
+                Body：
+                    类型：number(int64)
+                    内容：全局消息Id
             未提供JWT/JWT无效：
                 返回码：401 Unauthorized
                 Body：无
