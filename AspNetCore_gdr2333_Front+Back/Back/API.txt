@@ -1,5 +1,5 @@
 df1050 后端 API列表
-修订250124A
+修订250124B
 
 备注：
     如无特殊标注，Body均为JSON
@@ -394,7 +394,7 @@ df1050 后端 API列表
             无权删除/用户被封禁或锁定：
                 返回码：403 Forbidden
                 内容：无
-    删除帖子：DELETE /Post/DeleteComment
+    删除帖子评论：DELETE /Post/DeleteComment
         发送：
             Query：
                 Id：
@@ -500,6 +500,9 @@ df1050 后端 API列表
                 内容：
                     类型：number(int64)
                     内容：树洞Id
+            内容无效：
+                返回码：400 Bad Request
+                内容：无
             没有提供JWT/JWT无效：
                 返回码：401 Unauthorized
                 内容：无
@@ -556,12 +559,12 @@ df1050 后端 API列表
             没有提供JWT/JWT无效：
                 返回码：401 Unauthorized
                 内容：无
-            同时间内发送次数超过限制：
-                返回码：429 Too Many Requests
-                内容：无
             账号被封禁/账号被锁定/更改他人树洞：
                 返回码：403 Forbidden
                 内容：无 
+            找不到指定树洞：
+                返回码：404 Not Found
+                内容：无
     获取树洞审核情况：GET /Treehollow/Status：
         发送：
             Query：
@@ -578,7 +581,7 @@ df1050 后端 API列表
                     0：等待审核（人工队列）
                     1：审核通过
                     2：审核不通过
-    上传树洞评论：POST /Treehollow/NewComment
+    上传树洞评论：PUT /Treehollow/NewComment
         发送：
             Query：无
             Body：
@@ -683,6 +686,113 @@ df1050 后端 API列表
                             类型：number(int64)
                             内容：评论总数
                     内容：树洞列表
+    删除树洞：DELETE /Treehollow/Delete
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：要删除的树洞Id
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            删除成功：
+                状态码：200 OK
+                内容：无
+            树洞不存在：
+                返回码：404 Not Found
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            无权删除/用户被封禁或锁定：
+                返回码：403 Forbidden
+                内容：无
+    删除树洞评论：DELETE /Treehollow/DeleteComment
+        发送：
+            Query：
+                Id：
+                    类型：number(int64)
+                    内容：要删除的评论Id
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            删除成功：
+                状态码：200 OK
+                内容：无
+            树洞不存在：
+                返回码：404 Not Found
+                内容：无
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+            无权删除/用户被封禁或锁定：
+                返回码：403 Forbidden
+                内容：无
+    获取可管理树洞列表：GET /Treehollow/Manageable
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        Id：
+                            类型：number(int64)
+                            内容：树洞Id
+                        Title：
+                            类型：string
+                            内容：树洞标题
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                    内容：树洞列表
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
+    获取可管理评论列表：GET /Treehollow/ManageableComment
+        发送：
+            Query：无
+            Body：无
+            Header：
+                Authorization：该用户登录获取的JWT
+        接收：
+            获取成功：
+                返回码：200 OK
+                内容：
+                    类型：array
+                        PostId：
+                            类型：number(int64)
+                            内容：树洞Id
+                        CommentId：
+                            类型：number(int64)
+                            内容：评论Id
+                        Content：
+                            类型：string
+                            内容：评论内容
+                        SendTime：
+                            类型：string(ISO8601日期)
+                            内容：发送时间
+                        SenderName：
+                            类型：string
+                            内容：发送者名称
+                        SenderId：
+                            类型：number(int64)
+                            内容：发送者Id
+                    内容：评论列表
+            没有提供JWT/JWT无效：
+                返回码：401 Unauthorized
+                内容：无
 
 全局消息操作：
     查询对当前用户是否有新的全局消息：GET /GlobalMessage/Check

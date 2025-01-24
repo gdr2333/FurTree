@@ -52,6 +52,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         _logger.LogInformation($"自动审查结果：标题：{titleCheckResult}，内容：{contentCheckResult}");
         if (titleCheckResult == "合规" && contentCheckResult == "合规")
         {
+            _logger.LogInformation("帖子发送成功：状态：自动审查成功");
             post.Checked = true;
             post.CheckSuccess = true;
             dbContext.SaveChanges();
@@ -129,12 +130,12 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
             comment.Checked = true;
             comment.CheckSuccess = true;
             dbContext.SaveChanges();
-            _logger.LogInformation($"评发布查成功：状态：自动审查成功");
+            _logger.LogInformation($"评论发布成功：状态：自动审查成功");
             return Ok(post.PostId);
         }
         else
         {
-            _logger.LogInformation($"评发布查成功：状态：等待手动审查");
+            _logger.LogInformation($"评论发布成功：状态：等待手动审查");
             return Accepted(comment.CommentId);
         }
     }
@@ -220,6 +221,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         }));
     }
 
+    [Authorize]
     [HttpDelete]
     public IActionResult Delete([FromQuery] long Id)
     {
@@ -248,6 +250,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         return Ok();
     }
 
+    [Authorize]
     [HttpDelete]
     public IActionResult DeleteComment([FromQuery] long Id)
     {
@@ -257,7 +260,7 @@ public class PostController(IDbContextFactory<MainDataBase> dbContextFactory, Te
         var comment = dbContext.PostComments.Find(Id);
         if (comment is null)
         {
-            _logger.LogWarning("不存在");
+            _logger.LogWarning("帖子不存在");
             return NotFound();
         }
         if (user is null)
