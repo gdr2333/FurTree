@@ -1,0 +1,25 @@
+﻿@page "/Account/Login"
+@rendermode InteractiveServer
+@inject ProtectedLocalStorage ProtectedLocalStorage
+@inject IConfiguration Configuration
+
+<h3>用户登录</h3>
+<p>用户名或邮箱：</p>
+
+@code
+{
+	private HttpClient _httpClient = new();
+	private string _name = "";
+	private string _password = "";
+
+	private async Task<GetCapchaResult> GetCapchaAsync()
+	{
+		var req = await _httpClient.GetAsync($"{Configuration["ApiAddress"]}/Capcha/GetCapcha");
+		return await req.Content.ReadFromJsonAsync<GetCapchaResult>();
+	}
+
+	private async Task LoginAsync()
+	{
+
+	}
+}
