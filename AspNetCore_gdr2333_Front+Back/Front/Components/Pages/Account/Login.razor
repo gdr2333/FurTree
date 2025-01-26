@@ -2,24 +2,97 @@
 @rendermode InteractiveServer
 @inject ProtectedLocalStorage ProtectedLocalStorage
 @inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
+@using System.Security.Cryptography
+@using System.Text
 
 <h3>用户登录</h3>
+@if (_wrongCapcha)
+{
+	<Alert Color="AlertColor.Warning"> 验证码错误或无效！ </Alert>
+}
 <p>用户名或邮箱：</p>
+<input @bind="_name" type="text" />
+<p>密码：</p>
+<input @bind="_password" type="password" />
+<p>验证码：</p>
+<button @onclick="RefreshCapchaAsync">
+	<img src=@($"data:image/png;base64,{_capcha.Image}") />
+</button>
+<input @bind="_capchaResult" type="text" />
+<button @onclick="LoginAsync">登录</button>
+<a href="/Account/New">注册</a>
+<a href="/Account/Resend">重新发送邮箱确认码</a>
 
 @code
 {
 	private HttpClient _httpClient = new();
 	private string _name = "";
 	private string _password = "";
+	private string _capchaResult = "";
+	private GetCapchaResult _capcha;
+	private bool _wrongCapcha = false;
+	private bool _wrongAccountOrPassword = false;
+	private bool _accountLocked = false;
+	private bool _unknowError = false;
 
 	private async Task<GetCapchaResult> GetCapchaAsync()
 	{
-		var req = await _httpClient.GetAsync($"{Configuration["ApiAddress"]}/Capcha/GetCapcha");
-		return await req.Content.ReadFromJsonAsync<GetCapchaResult>();
+		var res = await _httpClient.GetAsync($"{Configuration["ApiAddress"]}/Capcha/GetCapcha");
+		return await res.Content.ReadFromJsonAsync<GetCapchaResult>();
 	}
 
 	private async Task LoginAsync()
 	{
+		var req = new AccountLoginRequest()
+			{
+				Name = _name,
+				CapchaId = _capcha.Id,
+				CapchaResult = _capchaResult,
+				PasswordHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(_password)))
+			};
+		var reqContext = JsonContent.Create(req);
+		var res = await _httpClient.PostAsync($"{Configuration["ApiAddress"]}/Account/Login", reqContext);
+		_wrongCapcha = false;
+		_wrongAccountOrPassword = false;
+		_accountLocked = false;
+		_unknowError = false;
+		switch (res.StatusCode)
+		{
+			case 200:
+				await ProtectedLocalStorage.SetAsync("JWT", await res.Content.ReadFromJsonAsync<string>());
+				NavigationManager.NavigateTo("/");
+				return;
+			case 400:
+				_wrongCapcha = true;
+				await RefreshCapchaAsync();
+				StateHasChanged();
+				return;
+			case 401:
+			case 404:
+				_wrongAccountOrPassword = true;
+				StateHasChanged();
+				return;
+			case 403:
+				_accountLocked = true;
+				StateHasChanged();
+				return;
+			default:
+				_unknowError = true;
+				StateHasChanged();
+				return;
+		}
+	}
 
+	private async Task RefreshCapchaAsync()
+	{
+		_capcha = await GetCapchaAsync();
+		StateHasChanged();
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+		await RefreshCapchaAsync();
 	}
 }
